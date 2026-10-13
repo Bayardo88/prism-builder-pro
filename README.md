@@ -1,34 +1,40 @@
 # prism-builder-pro
 
 Claude Code skill(s) for building **real prototypes of the Scalar product** from the
-[Prism-v1](https://github.com/Bayardo88/Prism-v1) design system and product app —
-tokens and coded components only, no hard-coded values, no invented components or
-layouts unless the feature itself requires one.
+[Prism-v1](https://github.com/Bayardo88/Prism-v1) design system and product app. It
+always builds on Prism-v1 `main` and uses the components the way their
+[Storybook](https://scalar-prism-storybook.netlify.app) stories do: tokens and coded
+components only, no hard-coded values, and no invented components or layouts unless
+the feature itself requires one.
 
 ## `scalar-forge`
 
-One skill that merges the former `scalar-product` (pages/prototypes in `apps/product`),
-`scalar-screen` (standalone screens + Figma push) and a reuse-first layer:
+The one Scalar build skill. It replaces `scalar-product` (pages and prototypes in
+`apps/product`) and `scalar-screen` (standalone screens and Figma push), both now
+retired and removed from Prism-v1, and adds a reuse-first layer:
 
 | Piece | What it does |
 |---|---|
-| `SKILL.md` | Modes: new page · edit page · prototype · standalone screen · Figma push |
+| `SKILL.md` | Sync to `main`, then modes: new page · edit page · prototype · standalone screen · Figma push |
+| `references/storybook.md` | The live Storybook: finding a story, URL patterns, story → component map, stories for new components |
 | `references/reuse-ladder.md` | 7-rung gate; when (and how) something new is allowed |
 | `references/screen-logic.md` | Screen brief, archetype→reference screen, state conventions, Figma grounding |
-| `references/app-architecture.md` | `apps/product` model: screen × state, chrome, routes, DataGrid rules |
-| `references/screen-recipes.md` | Six standalone archetypes and their traps |
-| `references/figma-push.md` | Code → Figma by instancing published components |
-| `scripts/reuse-check.mjs` | "Does this already exist?" search across screens, components, docs, tokens, known gaps |
+| `references/app-architecture.md` | `apps/product` model: screen × state, `PageTemplate` chrome, routes, Table / DataGrid rules |
+| `references/screen-recipes.md` | Eight archetypes (incl. spreadsheet and workboard), their stories and their traps |
+| `references/figma-push.md` | Code → Figma by instancing published components, starting from Page Template · Body Slot |
+| `scripts/reuse-check.mjs` | "Does this already exist?" search across screens, Storybook stories, components, PageTemplate / nav specs, docs, tokens and known gaps, with a warning when the checkout is behind `main` |
 
 ### Install
 
 ```bash
 git clone git@github.com:Bayardo88/prism-builder-pro.git
-cd prism-builder-pro && ./install.sh     # symlinks into ~/.claude/skills
+cd prism-builder-pro && ./install.sh     # symlinks into ~/.claude/skills, removes retired scalar-product / scalar-screen links
 git clone https://github.com/Bayardo88/Prism-v1 ~/Documents/GitHub/Prism-v1 && (cd ~/Documents/GitHub/Prism-v1 && npm install)
 ```
 
 Set `PRISM_V1=/path/to/Prism-v1` if it lives elsewhere. Then ask Claude Code to
 "add a … page to Scalar" or "prototype …".
 
-Requires Prism-v1 (`AI-GUIDE.md`, `apps/product/`, `docs/product/`). Figma steps use the Figma MCP.
+Requires Prism-v1 (`AI-GUIDE.md`, `apps/product/`, `docs/product/`). The skill fetches
+`origin/main` and works in a worktree when your checkout is on another branch. Figma
+steps use the Figma MCP.

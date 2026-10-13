@@ -8,3 +8,8 @@ for s in "$here"/skills/*/; do
   if [ -e "$t" ] && [ ! -L "$t" ]; then echo "skip $n: $t exists and is not a symlink"; continue; fi
   ln -sfn "${s%/}" "$t" && echo "linked $n -> ${s%/}"
 done
+# Retired skills, replaced by scalar-forge: drop their links (never a real directory).
+for n in scalar-product scalar-screen; do
+  t="$HOME/.claude/skills/$n"
+  if [ -L "$t" ]; then rm "$t" && echo "removed retired $n link"; fi
+done

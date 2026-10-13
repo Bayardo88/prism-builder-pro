@@ -1,6 +1,6 @@
 # Pushing a screen back into Figma
 
-Run this **after** the React screen renders correctly in both themes. The point
+Run this **after** the React screen renders correctly. Frames are light only, the same as pages (R14). The point
 is to give design a frame they can react to and edit, not a picture.
 
 ## Before you start
@@ -23,7 +23,7 @@ picture of a screen.
 
 | Figma file | Key | Holds |
 |---|---|---|
-| Components | `Z4MtKOfkNEzhMYJzN1q3kR` | the 88 component sets |
+| Components | `Z4MtKOfkNEzhMYJzN1q3kR` | 154 component sets across 23 pages (`docs/components.md` has the current count), incl. **18 · Template** |
 | Tokens | `anrnTIJKgu27zV224h7vON` | variables + 3 elevation styles |
 
 Both are published, so `importComponentByKeyAsync` and
@@ -45,8 +45,12 @@ await node.getPublishStatusAsync()   // 'CURRENT' | 'CHANGED' | 'UNPUBLISHED'
    Scalar libraries — unscoped it returns unrelated community kits. Or read the
    component sets straight off the components file.
 2. **Import** the component keys you need, once, and keep the ids.
-3. **Build the skeleton**: page frame, then a `placeholder = true` section per
-   region of the screen. Return the node ids.
+3. **Build the skeleton from the template.** Place an instance of **Page Template ·
+   Body Slot** (page **18 · Template**; the designers' frame is `1671:13280`). Its
+   navigation, company header, Tertiary Menu and drawer are already instances.
+   Set their properties to match the screen's `PageTemplate` props. Hide a tier
+   the screen omits; don't delete it. Inside the `BODY-SLOT`, add a
+   `placeholder = true` section per region of the body. Return the node ids.
 4. **Fill one region per call.** Instance the component, set its variant
    properties to match the React props, then `placeholder = false`.
 5. **Set content through component properties, not by redrawing.** Nested
@@ -78,6 +82,9 @@ differently. `docs/components.md` has the full table; the ones that trip people:
 | `<SectionSubMenu>` | `Captable sub-menu` / `Valuations sub-menu` |
 | `<ToolSwitch value>` | `Valuation` + `Workboard` + `Tool-switch` |
 | `chartScaffold(grid)` | `Chart Frame` `Grid` variant |
+| `<PageTemplate>` + `children` | Page Template · Body Slot + its `BODY-SLOT` slot |
+| `<RowHeader>` | the first cell of `Row-reading` / `Row-input` |
+| any export marked **＋** in `docs/components.md` (e.g. `Table`, `ActionPill`, `StepMenu`, `DealCard`, `WorkCalendar`, `WorkTimeline`) | code-first: there's no library set to instance. Leave the region marked with a note naming the component and its props (and its story URL). Don't redraw it |
 
 Interaction states have no CSS equivalent in Figma, so a handed-over screen
 shows the default state. Only build a hover or pressed frame if design asked
@@ -88,5 +95,6 @@ for one.
 - Charts. They are Chart.js on a canvas; Figma has no equivalent and a redrawn
   chart is a picture. Push the surrounding screen and leave a frame sized for
   the chart with a note naming the component and its props.
+- A dark frame (R14).
 - Anything still failing `npm run verify`. Fix the code first — pushing a broken
   screen puts the drift into design's hands.

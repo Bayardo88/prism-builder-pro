@@ -12,16 +12,16 @@ Try 2–3 synonyms before concluding something doesn't exist.
 |---|---|---|---|
 | 1 | **An existing screen/state already does it** | Same job, different data? | `docs/product/screens.json`, `screen-catalog.md` |
 | 2 | **Compose existing screens' inner pieces** | Import them; don't redraw | the screen's folder in `apps/product/src/screens/` |
-| 3 | **A platform-chrome slot** (`AppFrame`, `CompanyLayout`, `PageHeader`, `overlay`, `dock`) | Is it a page frame, menu, modal or drawer? | `shell/` |
-| 4 | **An existing DS component, its props/variants** | Intent → component table | `AI-GUIDE.md` §5, §7; `docs/components.md` |
-| 5 | **A composition of existing DS components** | Layout out of `Stack`/`Grid`-type primitives + tokens only | `AI-GUIDE.md` §3 (space/size) |
+| 3 | **A `PageTemplate` / chrome slot** (`area`, `company`/`section`, `subNav`/`subNavEnd`, `headerEnd`, `dock`, `overlay`, `openMenu`, `Toolbar*`) | Is it a page frame, a nav tier, a menu, a modal or a drawer? | `shell/`, `docs/page-template.md`, `docs/navigation-3-tier-system.md` §7–8 |
+| 4 | **An existing DS component, its props/variants — as its story shows** | Intent → component table, then the story | `AI-GUIDE.md` §5, §7; Storybook (`references/storybook.md`); `docs/components.md` |
+| 5 | **A composition of existing DS components** | Layout out of DS parts + `space`/`size` tokens only; check the stories for a composition already shown | `AI-GUIDE.md` §3 (space/size) |
 | 6 | **A new screen-local layout** (a `<div>` arrangement of DS parts, tokens only) | Only if 1–5 fail; lives in the screen folder | — |
 | 7 | **A new DS component / token / chrome pattern** | Only if the *feature* requires behaviour no composition gives | **Propose, don't build** (below) |
 
 ## What counts as "the feature requests it"
 
 New layout / component is justified **only** when at least one is true:
-- The feature has an interaction with no equivalent (e.g. drag-to-reorder, a board/kanban, a timeline scrubber) — confirmed by `reuse-check` and AI-GUIDE §5.
+- The feature has an interaction with no equivalent (e.g. drag-to-reorder, a board/kanban) — confirmed by `reuse-check`, the Storybook index and AI-GUIDE §5. (Calendars, timelines, step pills and deal cards already exist — Workboard family.)
 - The information architecture genuinely changes (a new top-level area, a new scope).
 - The requested data shape doesn't fit any grid/list/form archetype.
 
@@ -33,8 +33,10 @@ pasted that uses different styling (the DS wins — AI-GUIDE overrides screensho
 
 - A raw hex, rgb, px in spacing/sizing, or hand-set font size — `npm run lint:tokens` fails them. Use `color.*`, `space.*`, `size.*`, `type.style()`.
 - A `--primitive-*` token in product code (R1). Only semantic tokens.
+- Dark mode on a page (R14), a hand-assembled nav bar, a fourth nav tier, or extra padding/scroll wrappers in the `PageTemplate` body.
+- A fork or product-specific re-skin of `Table`.
 - Text below 12px (R10). PRISM colours for anything but entity type (R11).
-- An HTML `<table>` (use `DataGrid`), a `Button` that navigates (use `Link`), `window.confirm` (use `ConfirmationDialog`).
+- An HTML `<table>` (use `DataGrid` / `Table`), a `Link` in a row's first cell (use `RowHeader href`), a `Button` that navigates (use `Link`), `window.confirm` (use `ConfirmationDialog`).
 - A hard-coded company/user list — use `db`, `fixtures.ts`.
 - Silently "fixing" something in `docs/known-gaps.md` — those are deliberate.
 
@@ -44,16 +46,19 @@ pasted that uses different styling (the DS wins — AI-GUIDE overrides screensho
 2. **Ask the user** before building it (it changes the shared design system, not just a screen).
 3. If approved, build the *smallest* thing:
    - **Screen-local first** (rung 6) — a tokens-only composition inside the screen folder, named for what it is. Promote to `src/components/` only if a second screen needs it.
-   - **New token**: edit `src/styles/tokens.css` → `npm run gen:tokens` → `node scripts/gen-docs.mjs` → add to `src/tokens/index.ts` **by hand**. Semantic, never primitive; give both Light and Dark values.
-   - **New DS component**: `src/components/<family>/`, follow the neighbouring component's file shape, export from the family `index.ts`, add a row to `docs/components.md` marked **＋** (code-layer only), document props in `AI-GUIDE.md` §7.
+   - **New token**: token values come **from Figma**, never from code. Propose it to design; once it is in the published library, transcribe it into `src/styles/tokens.css` → `npm run gen:tokens` → `node scripts/gen-docs.mjs` → `npm run verify` (the generated `tokens.json`, `generated.ts`, `docs/tokens.md` are never hand-edited). Semantic, never primitive; Light and Dark values; a new `bg.*` re-runs the contrast gate (R13, `npm run lint:contrast`). The only code-first precedent is the Workflow tones (known gap 13) — don't add to it.
+   - **New DS component**: `src/components/<family>/`, following `docs/component-contract.md` (`forwardRef`, native props + `...rest`, merged `className`, exported props type, `asChild` on triggers, the APG keyboard model for any role). Ship it with a **story** (`<Name>.stories.tsx`, `tags: ['autodocs']`) and a **test** (axe + keyboard + ref/className passthrough); export from the family `index.ts`; add a row to `docs/components.md` marked **＋**; document props in `AI-GUIDE.md` §7 (and §5 if it answers a new intent). `npm run verify` and `npm run test:stories` must pass.
 4. **Log it**: add the gap and your choice to the screen's `docs/product/pages/NN-*.md` "Gaps" section so design can adopt it in Figma (Figma is the source; code-only additions are debt until then).
-5. `npm run verify:product` must stay green.
+5. `npm run verify:product` (and `npm run verify` if `src/` changed) must stay green.
 
 ## Quick anti-drift table
 
 | Temptation | Do instead |
 |---|---|
 | Copy the Cap Table grid and tweak | import/compose its cells; use `DataGrid` + grid-pattern cells |
+| A spreadsheet with its own selection/resize logic | `Table` (`columns` / `rows` / `cells`) |
+| Hand-build the page top (menus, company bar, drawer) | `PageTemplate` props |
+| A custom calendar, Gantt or status pill | `WorkCalendar`, `WorkTimeline`, `ActionPill` / `ActionTag` / `DueDatePill` |
 | Make a "stat card" | `SummaryCard` family (`docs/components.md` §13) |
 | Build a custom empty/loading/error block | `EmptyState`, `Skeleton`, `Alert`/`Banner`, feedback patterns (§14, §24) |
 | Custom filter bar | `FilterDropdown`, `Chip`, `ViewTabBar` |

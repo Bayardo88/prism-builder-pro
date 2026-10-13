@@ -19,16 +19,19 @@ apps/product/
     data/companies.db.ts     GENERATED from db/companies.json by db/seed.mjs (200 companies) — never edit
     data/fixtures.ts         firm, firms, user, companies/companyById (from db), formatters
     shell/
-      AppFrame.tsx           ScalarProvider + navy Primary Menu + body; `openMenu`, `overlay`
-      CompanyLayout.tsx      company header + Secondary Menu + Tertiary sub-nav + footer + dock
+      PageTemplate.tsx       START HERE for every new screen — wires the chrome into the DS PageTemplate slots
+      AppFrame.tsx           ScalarProvider (light) + navy Primary Menu (Tier 1) + body; `openMenu`, `overlay`
+      CompanyLayout.tsx      legacy company wrapper (header + Secondary + Tertiary + dock); existing screens only
       PageHeader.tsx         firm-level title + section tabs + actions
+      Toolbar.tsx            Tier 3 right-hand tools: ToolbarAi · ToolbarCurrency · ToolbarTableTools · ToolbarKebab · ToolbarSave
       WorkspaceDock.tsx      Notes / Sheets / Documents dock → WorkspaceDrawer
       overlays/              global menus: companies, date, search, notifications, user
     screens/
-      p01-home/ … p16-firm-settings/   one folder per Figma page
+      p01-home/ … p16-firm-settings/   one folder per Figma page (37 screens, 103 frames)
         index.ts             `export const screens: ScreenDef[]`
         <Screen>.tsx         `({ state, params }: ScreenProps) => JSX`
         data.ts              area-specific demo data (optional)
+      prototypes/            company-overview-v2 · company-valuations-v2 · reports (`proto:` frame ids)
 ```
 
 ## The model: screen × state
@@ -49,13 +52,27 @@ export function IncomeStatement({ state, params }: ScreenProps) {
 }
 ```
 
-## Chrome — pick one, never re-draw it
+## Chrome — `PageTemplate`, never re-drawn
+
+**New screens use `PageTemplate`** (`shell/PageTemplate.js`); your content is its
+`children`, the body slot. It renders the three navigation tiers of
+`docs/navigation-3-tier-system.md` from props — Tier 1 Primary Menu (`area`),
+Tier 2 company header + Secondary Menu (`company`, `section`, `headerEnd`),
+Tier 3 Tertiary Menu (`subNav`, `subNavEnd`, `subNavAdd`) — and the docked
+Workspace drawer (`dock`, `dockOpen`, `dockContent`, `dockPanels`). Omit a prop and
+its tier isn't drawn; never render an empty bar, never add a fourth tier.
 
 | Page kind | Wrap in | Example |
 |---|---|---|
-| Firm-level product area | `AppFrame area="valuations"` + optional `PageHeader` + `PageBody` | Valuations, Waterfalls, Documents, Intelligence |
-| Company page | `CompanyLayout company section subNav subNavEnd headerEnd footer dock` | Financials, Cap Table, Company Valuations |
-| Settings / admin | `AppFrame area="settings"` + `PageHeader title tabs current actions` | Firm Settings, User Management, Account |
+| Firm-level product area | `PageTemplate area="valuations"` (no `company`) | Valuations, Waterfalls, Documents, Intelligence, Reports |
+| Company page | `PageTemplate area="company" company section subNav subNavEnd headerEnd` | Financials, Cap Table, Company Valuations |
+| Settings / admin | `PageTemplate area="settings" dock={false}` (+ `PageHeader title tabs current actions` in the body) | Firm Settings, User Management, Account |
+
+`area` is `home · intelligence · valuations · waterfalls · documents · reports · company · settings`;
+`section` is `summary · financials · cap-table · valuations · waterfall · documents · overview`.
+Tier 3 tools come from `shell/Toolbar.tsx` in the nav file's order (AI · currency ·
+fit/filter · ⋮ · primary action). Existing screens on `AppFrame` + `CompanyLayout`
+keep working; don't migrate them unless asked.
 
 - `AppFrame.openMenu` opens a global menu (`'companies' | 'companies-add' | 'date' |
   'search' | 'notifications' | 'notification-settings' | 'user' | 'user-firm-settings'`).
@@ -83,6 +100,12 @@ use the pattern: `route: companyPattern(routes.company.capTable)` →
 - Companies come from `db` — never hard-code a company list. Long lists page
   (25, `Pagination` with rows-per-page) or use `ShowMoreRow`; pickers use
   `db.companies.search`. Re-seed with `npm run product:seed` (deterministic).
+- **One table.** A spreadsheet-like grid (selection, column resize, formula view,
+  editing) is `Table` — configured by `columns` / `rows` / `cells`, never forked or
+  re-skinned per product (see the *Prism Table spec* in Storybook). A read-only
+  figure grid is `DataGrid`.
+- **Every `DataGrid` row starts with a `RowHeader`** (its name cell). A row that
+  links passes `href` to the `RowHeader` — never a `Link` inside a `Cell`.
 - `DataGrid` sizes columns from the header cells: each column is at least its
   header label on one line, leftover width shared by `grow` (or fixed `width`);
   rows are subgrids so cells fill the column. Put grid-pattern cells
@@ -94,6 +117,7 @@ use the pattern: `route: companyPattern(routes.company.capTable)` →
   `type="data"` = sourced/calculated (green); totals `Row type="total"`.
   Column headers stay on one line.
 - Charts remount on data change (`key=`) — ChartCanvas only redraws on theme change.
+  Chart.js options take resolved values from `useChartTokens`, never `var(--…)`.
 - Shared names/figures come from `data/fixtures.ts` so screens agree.
 
 ## Verification commands
@@ -104,5 +128,7 @@ npm run build:product     # app → apps/product/build
 npm run lint:tokens       # token contract, incl. apps/product/src
 npm run product:catalog   # coverage check + regenerate docs/product/screen-catalog.md & screens.json
 npm run verify:product    # all three app checks
+npm run verify            # when src/ changed: typecheck · tokens · contrast · ESLint · tests
+npm run storybook         # http://localhost:6006 — stories from this checkout
 node scripts/serve.mjs    # http://localhost:4178/apps/product/index.html#/catalog
 ```

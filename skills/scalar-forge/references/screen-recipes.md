@@ -1,172 +1,240 @@
 # Screen archetypes
 
-Six shapes cover nearly every Scalar screen. Pick one, then compose it from the
-components listed. Each entry ends with the traps specific to that shape.
+Eight shapes cover nearly every Scalar screen. Pick one, then compose its body
+from the listed components. **Open each component's story first** (see
+`storybook.md`) and copy its props from there. Each entry ends with the traps
+specific to that shape.
+
+Every archetype lives inside `PageTemplate` (see [Composing the chrome](#composing-the-chrome)).
+The archetype is only what goes in the **body slot**.
 
 ---
 
-## `data-sheet` — a dense grid of figures
+## `data-sheet`: a dense, read-only grid of figures
 
-The core Scalar screen: a cap table, a waterfall, an assumptions sheet.
+The core Scalar screen: an income statement, a cap table summary, a waterfall.
 
-**Chrome:** `PrimaryMenu` → `CompanyInfo` → `SecondaryMenu` → `TertiaryMenu`
-**Body:** `DataGrid` with `ColumnHeader` in `head`, then `Row` + `Cell`
+**Chrome:** company page (Tier 1 → Company info + Secondary Menu → Tertiary Menu with view tabs and tools)
+**Body:** `DataGrid` with `ColumnHeader`s in `head`, then `Row` → `RowHeader` + `Cell`s
 **Furniture:** `Footnote`, `ModalStatus`, `ValuationStatus`, `Ledger`, `Pagination`
+**Stories:** *Data/Table/DataGrid*, *Cell*, *RowHeader*, *ColumnHeader*, *Data/GridPatterns*
 
 ```tsx
 <DataGrid
-  label="Cap table"
+  label="Income statement"
   head={<>
-    <ColumnHeader grow={1}>Security</ColumnHeader>
-    <ColumnHeader numeric>Shares</ColumnHeader>
+    <ColumnHeader grow={2}>Line item</ColumnHeader>
+    <ColumnHeader numeric>FY2025</ColumnHeader>
   </>}
 >
-  <Row>
-    <Cell>Series A Preferred</Cell>
-    <Cell numeric type="data">1,000,000</Cell>
-  </Row>
-  <Row type="total">
-    <Cell state="total">Total</Cell>
-    <Cell state="total" numeric>1,000,000</Cell>
-  </Row>
+  <Row><RowHeader>Revenue</RowHeader><Cell numeric type="data">4,980,000</Cell></Row>
+  <Row zebra><RowHeader>Operating expenses</RowHeader><Cell numeric type="input">1,050,000</Cell></Row>
+  <Row type="total"><RowHeader type="total">EBITDA</RowHeader><Cell numeric state="total">2,020,000</Cell></Row>
 </DataGrid>
 ```
 
 **Traps**
 
+- **Every row starts with a `RowHeader`**, which is its name. A row that navigates
+  passes `href` to the `RowHeader`. Never put a `Link` in a `Cell`.
 - `Cell type` states *where the number came from*: `readable` for a plain
-  figure, `input` for something editable, `data` for a value pulled from a
-  source. Getting this wrong misreports provenance, which matters in a
+  figure, `input` for something editable (blue), `data` for a sourced value
+  (green). Getting this wrong misreports provenance, which matters in a
   valuation product.
-- Every money column takes `numeric` — it right-aligns and applies tabular
-  figures. Without it, digits jitter between rows.
-- `DataGrid` sizes columns from the header cells (each is at least its label on
-  one line; leftover width goes to `grow={n}` or a fixed `width`) and rows are
-  subgrids. Put widths on the **header only** — never per-cell width styles.
-  Verify against `apps/product` grids if this snippet and the current API differ.
+- Every money column takes `numeric`. It right-aligns and applies tabular
+  figures; without it, digits jitter between rows.
+- `DataGrid` sizes columns from the header cells. Put widths on the
+  **header only** (`grow` or a `size.*` `width`), never in per-cell width styles.
+- Pick one cell model per grid: `Cell`, or the grid-pattern cells
+  (`RowLabelCell` / `GridValueCell`). Don't mix them (known gap 8).
 - Grid furniture is the one place `Button size="s"` and the 24px dense target
   are allowed. Never carry that exception into the rest of the page.
 
 ---
 
-## `dashboard` — an overview of many things
+## `spreadsheet`: select, resize, edit, see formulas
 
-**Chrome:** `PrimaryMenu` → `SecondaryMenu`
+A working sheet rather than a report: range selection, column resizing, a formula view, in-place editing.
+
+**Body:** `Table` (`tableId`, `title`, `columns`, `rows`, `cells`, `footnotes`, `selection`)
+**Stories:** *Data/Table/Table* (+ the *Prism Table spec* MDX page)
+
+**Traps**
+
+- **There is one table.** Differences between products come from `columns`,
+  `rows` and `cells`, never from a variant, a fork or restyling.
+- `cell.kind` (`readable` / `editable` / `sourced` / `total` / `draft`) sets the
+  text colour only. The fill comes from selection and hover; never store it per cell.
+- Selection is one rectangle drawn as one overlay. Don't hand-place cell borders.
+- Rows are 26px and headers 40px; never auto-size them. Column widths persist
+  per `tableId`. Pass `columnWidths` / `onColumnResize` only to control them.
+
+---
+
+## `dashboard`: an overview of many things
+
+**Chrome:** firm page (Tier 1, optional Tier 2 title and filters)
 **Body:** a grid of `Card` + `CardItem`, plus charts
-**Furniture:** `Chip`, `Badge`, `Alert`
+**Furniture:** `Chip`, `Badge`, `Alert`, `DataFreshness`
+**Stories:** *Core/Card*, *Charts/**
 
 **Traps**
 
 - A `Card` is a surface, not a button. If the whole card navigates, it still
   needs a named action inside it.
-- `CardItem` trend direction never rests on colour — the arrow and the sign
-  carry it.
-- Charts: legend mandatory at 2+ series, direct labels at 3+. See
-  AI-GUIDE §7 and the CVD gap.
+- `CardItem` trend direction never rests on colour alone. The arrow and the
+  sign carry it.
+- Charts: a legend is mandatory at 2+ series and direct labels at 3+. Every
+  chart has a `title`, and the shipped charts build the hidden data table.
+  Chart.js gets values from `useChartTokens`, never `var(--…)`.
 - Resist filling the page. A dashboard that shows everything ranks nothing.
 
 ---
 
-## `detail` — one object, in depth
+## `detail`: one object, in depth
 
 A single valuation, company or document.
 
-**Chrome:** `PrimaryMenu` → `CompanyInfo` → `SecondaryMenu` → `Breadcrumb`
-**Body:** `Tabs` for peer views, `Accordion` for secondary detail, `Card` for summary
-**Edit:** `Drawer` (page stays visible) or `Modal` (full attention)
+**Chrome:** company page; Tier 3 views for peer views of the object
+**Body:** `KeyValueRow`s, `Accordion` for secondary detail, `Card` for a summary, `Breadcrumb` when the object sits deep in a hierarchy
+**Edit:** `Drawer` (the page stays visible) or `Modal` (needs full attention)
+**Stories:** *Admin/Admin* (Key Value), *Overlays/Accordion*, *Overlays/Modal*
 
 **Traps**
 
-- `Tabs` are for peer views of one thing. Steps in a process are `Stepper`;
-  paging records is `Pagination`.
-- The last `Breadcrumb` item is where the user already is — not a link.
+- Peer views of one thing go in the Tertiary Menu or `Tabs`. Steps in a process
+  use `Stepper`; paging records uses `Pagination`.
+- The last `Breadcrumb` item is where the user already is, so it's not a link.
 - Never hide anything required to finish the task inside a collapsed
   `AccordionItem`.
 
 ---
 
-## `form` — ask for input
+## `form`: ask for input
 
-**Body:** `FormField` wrapping `Input` / `Select` / `Textarea`; `Checkbox`,
-`Radio`, `Switch`, `DatePicker`
-**Actions:** `Button` pair, primary action last in the DOM
+**Body:** `FormField` wrapping `Input` / `Select` / `Textarea`, or
+`FloatingLabelInput` / `FloatingLabelSelect` / `NumberField` for page and modal
+forms; `Checkbox`, `Radio`, `Switch`, `DatePicker`, `SettingRow`
+**Actions:** a `Button` pair, with the primary action last in the DOM
+**Stories:** *Forms/Input*, *Forms/Controls*, *Forms/Patterns*, *Overlays/ConfirmationDialog* (SettingRow)
 
 **Traps**
 
-- Always `FormField`, never a bare `Input`. The label is permanent — a
-  placeholder standing in for one disappears exactly when it is needed.
+- Always use `FormField` (or a floating-label field), never a bare `Input`. The
+  label is permanent: a placeholder standing in for one disappears exactly when
+  it's needed.
 - Error text says what is wrong **and how to fix it**. "Invalid" is not a
   message.
-- `Switch` only when the change applies immediately. If it needs Save, it is a
-  `Checkbox`.
-- Above ~7 options use `Select`; below that `Radio` shows every choice at once.
-- A far-off date is typed, not clicked to. Pair `DatePicker` with a text field.
+- Use `Switch` / `SettingRow` only when the change applies immediately. If it
+  needs Save, it's a `Checkbox`.
+- Above ~7 options use `Select`; below that, `Radio` shows every choice at
+  once. If the list can exceed ~8 items, use `ComboboxPanel`.
+- A far-off date is typed, not clicked to, so pair `DatePicker` with a text field.
 
 ---
 
-## `list-search` — find something among many
+## `list-search`: find something among many
 
-**Body:** `ModalSearch` or `SearchBar`, `FilterDropdown`, `Chip` for active
-filters, `DataGrid` or a row list, `Pagination`
+**Body:** `SearchBar` or `ModalSearch`, `FilterDropdown` / `FilterBar`, `Chip` for
+active filters, `DataGrid` or a row list (`FileRow`), `Pagination` (rows per page)
 **Global:** `GlobalSearch` for the cross-entity command palette
+**Stories:** *Navigation/GlobalSearch*, *Header/Controls*, *Navigation/Tabs* (Pagination), *Files/Files*
 
 **Traps**
 
 - `GlobalSearch` is not a page filter. It crosses firms, companies, documents
   and versions; a filter narrows one list.
-- In `GlobalSearch`, scope is a **stack** — Tab pushes, Backspace pops. Never
+- In `GlobalSearch`, scope is a **stack**: Tab pushes, Backspace pops. Never
   show more than three chips.
 - Result rows are coloured by **PRISM type only**, and the badge must match the
   tint. A row tinted Company carrying a Document badge states something false.
 - `FilterDropdown` shows the value in force, not the filter's name.
-- Empty results are an `EmptyState type="no-results"` that offers the way out.
+- Empty results are an `EmptyState type="no-results"` that offers a way out.
 
 ---
 
-## `empty-or-error` — nothing to show, or something broke
+## `workboard`: work items, their steps and dates
 
-**Body:** `EmptyState`, `Alert`, `Skeleton`
+Engagements moving through workflow steps, on a list, a calendar or a timeline.
+
+**Body:** a `DataGrid` of items with an `ActionPill` (+ `StepMenu`) and a
+`DueDatePill` per row; `DealCard` for the deal behind an item; `WorkCalendar`
+(with `CalendarTaskCard` as `renderEvent`) or `WorkTimeline` under a `PeriodToolbar`;
+`ColorPicker` for a firm's own status colours
+**Stories:** *Workboard/Action Pill*, *Calendar*, *Timeline*, *Deal Card*, *Color Picker*
 
 **Traps**
 
-- `no-data` is first-run and offers the action that fills it. `no-results`
-  follows a search and offers the way out. `error` explains what failed and
-  offers a retry.
+- A `WorkflowTone` (`blue` / `pink` / `cyan` / `orange` …) **identifies the step**.
+  It is never status, never permission, and never built from a `--primitive-*`
+  step (known gap 13).
+- Urgency comes from `dueUrgency(iso)`, not from picking a colour. Today and
+  Overdue carry hidden words (R8).
+- `ActionPill` clicks never bubble to the row. Use `s` in a grid and `m` in a modal header.
+- Use `ActionTag` for a step that can't be acted on (calendar cards, timelines).
+- `WorkCalendar` without `onShowMore` renders "+N more" as text, so pass it
+  whenever a day can overflow.
+
+---
+
+## `empty-or-error`: nothing to show, or something broke
+
+**Body:** `EmptyState`, `Alert`, `Banner`, `Skeleton`, `Spinner`
+**Stories:** *Core/Primitives* (Empty …), *Feedback/Alert*, *Feedback/Banner*
+
+**Traps**
+
+- `no-data` is the first-run state and offers the action that fills it.
+  `no-results` follows a search and offers the way out. `error` explains what
+  failed and offers a retry.
 - Write guidance, not apology. "Something went wrong" is not an error state.
 - `Skeleton` must match the layout it replaces, or the page jumps when real
-  content lands. Under 300ms show nothing at all.
-- Inline and persistent is `Alert`; transient and floating is `Toast`. If the
-  user must act, it is an `Alert`.
+  content lands. Under 300ms, show nothing at all.
+- An inline, persistent message is an `Alert`; a page-wide one is a `Banner`;
+  a transient, floating one is a `Toast`. If the user must act, it's an `Alert`.
+- The chrome around an empty or error body doesn't change.
 
 ---
 
 ## Composing the chrome
 
-Every product screen shares the same top. Three tiers is the limit — a fourth
-level belongs in the page body.
+Every screen starts from `PageTemplate`. Never assemble `PrimaryMenu`,
+`CompanyInfo` and `WorkspaceDrawer` yourself. Read `docs/page-template.md` §6
+and the navigation spec's screen matrix (`docs/navigation-3-tier-system.md` §7).
+
+**In `apps/product`**, use the product wrapper, which wires Tier 1's global menus,
+the company header, the Secondary Menu and the dock:
 
 ```tsx
-<ScalarProvider mode="system" viewport="auto">
-  <PrimaryMenu
-    logo={<ScalarMark />}
-    end={<><SearchBar /><Notification unread /><Avatar size="s" initials="BV" /></>}
+import { PageTemplate } from '../../shell/PageTemplate.js';
+import { ToolbarCurrency, ToolbarSave } from '../../shell/Toolbar.js';
+
+<PageTemplate
+  area="company" company={company} section="valuations"
+  subNav={<>…TertiaryMenuItems…</>} subNavEnd={<><ToolbarCurrency /><ToolbarSave /></>}
+>
+  {/* archetype body: the BODY-SLOT */}
+</PageTemplate>
+```
+
+**Standalone (`examples/screens`)**: copy `examples/screens/PageTemplate.tsx`,
+keep its five slots and replace the `children`:
+
+```tsx
+<ScalarProvider mode="light" viewport="auto">   {/* always light (R14) */}
+  <PageTemplate
+    navigation={<PrimaryMenu end={…}>…MainMenuItems… <Selector label="Measurement Date" value="01/17/2024" /></PrimaryMenu>}
+    companyInfo={<CompanyInfo name="Apple Inc." status={<Badge>Draft</Badge>}><SecondaryMenu>…</SecondaryMenu></CompanyInfo>}
+    subNavigation={<TertiaryMenu onAdd={…} end={…}>…TertiaryMenuItems…</TertiaryMenu>}
+    drawer={<WorkspaceDrawer docked tabs={…} />}
   >
-    <MainMenuItem current>Companies</MainMenuItem>
-    <MainMenuItem>Valuations</MainMenuItem>
-  </PrimaryMenu>
-
-  <CompanyInfo
-    avatar={<Avatar size="s" initials="AC" />}
-    name="Acme Inc."
-    meta="ACME · Software"
-    status={<ValuationStatus state="in-service" />}
-  />
-
-  <SecondaryMenu>
-    <SecondaryMenuItem current>Overview</SecondaryMenuItem>
-    <SecondaryMenuItem>Cap table</SecondaryMenuItem>
-  </SecondaryMenu>
-
-  <main className="scalar-page">{/* archetype body */}</main>
+    {/* archetype body */}
+  </PageTemplate>
 </ScalarProvider>
 ```
+
+- Three navigation tiers is the limit. A fourth level belongs in the body.
+- To hide a tier, omit its prop. Never render an empty bar.
+- No outer padding, `max-width` or scroll wrapper in the body: the slot is
+  already inset 16px and scrolls on its own.
+- A finished screen never ships the `BodySlot` placeholder.
