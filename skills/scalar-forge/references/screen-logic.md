@@ -25,7 +25,7 @@ documents *how the product behaves*. Reuse both. Before writing JSX, produce thi
 | Company financial/statement grid | `p06-company-summary-financials` | `RowLabelCell` hierarchy + `GridValueCell`; totals `Row type="total"`; `numeric` on numbers; version picker via `Selector`+`SelectMenu` |
 | Editable model grid (cap table style) | `p07-company-cap-table` | inputs blue / calcs green, live recompute from `useState`, FAB adds a column, one-blank-at-a-time rule |
 | Spreadsheet (selection, resize, formula view) | Storybook *Data/Table/Table* + *Prism Table spec* | `Table` with `columns`/`rows`/`cells`; `cell.kind` sets text colour only; widths persist per `tableId` |
-| Workflow / work tracking | Storybook *Workboard/** | `ActionPill` + `StepMenu` per item, `DueDatePill`, `DealCard`; `WorkCalendar` / `WorkTimeline` under a `PeriodToolbar`; tones identify the step, never status |
+| Workflow / work tracking | Storybook *Workboard/** | `ActionPill` + `StepMenu` per item, `DueDatePill`, `DealCard`; `WorkCalendar` / `WorkTimeline` under a `PeriodToolbar`; one item in full is `ValuationModal` (people via `AssigneeCard`, step staffing via `StepAssignMenu` + `StatusTrigger`, notes via `NoteCard` + `NoteComposer`); tones identify the step, never status |
 | Analytics / charts | `p02-intelligence` | chart components only; ≥3 series ⇒ legend + direct labels; remount with `key=` on data change; read `known-gaps` §1 |
 | Document list / viewer | `p05`, `p10-company-documents` | `FileRow`/`FileTypeBadge`, `Dropzone` upload modal (Done disabled until file), viewer with `PageStepper`/`ZoomControl` |
 | Settings form | `p12-account`, `p16-firm-settings` | Form Patterns; `SettingRow` (applies at once) vs `Checkbox` + Save; `FormField` validation; `ImageCropField` |
@@ -53,7 +53,7 @@ Order of trust: **`AI-GUIDE.md` > `docs/page-template.md` / navigation spec > pa
 
 - Node id already in `screens.json` (`figmaNode`) ⇒ the frame is coded; read the coded screen, don't rebuild from Figma.
 - A components-file node is a component: find its story (reuse-check, `docs/components.md`) instead of reading Figma.
-- To *look* at a frame or pattern: Figma MCP `get_screenshot`, `get_metadata` (structure), `get_design_context` (only for a node not yet coded). Files: components `Z4MtKOfkNEzhMYJzN1q3kR` (Page Template is `1671:13280`), tokens `anrnTIJKgu27zV224h7vON`, product screens `cZktZhD0ssL5lRVOvSqmOV`, navigation `nqqghejThUYeSXA9CgzLEu` (Global view Documentation `84:61868`).
+- To *look* at a frame or pattern: Figma MCP `get_screenshot`, `get_metadata` (structure), `get_design_context` (only for a node not yet coded). Files: components `Z4MtKOfkNEzhMYJzN1q3kR` (Page Template is `1671:13280`), tokens `anrnTIJKgu27zV224h7vON` (incl. *Semantic: Color › Deal/\**), workboard `tuFpgEHX8w3BDI40U0FUwV` (Valuation modal 532:16434, coded), product screens `cZktZhD0ssL5lRVOvSqmOV`, navigation `nqqghejThUYeSXA9CgzLEu` (Global view Documentation `84:61868`).
 - `get_variable_defs` gives token *names* — map each to the code token by name (`docs/tokens.md`); never copy a hex, and never trust a Figma value that contradicts `tokens.css`.
 - The Figma MCP seat has a call cap: read only the nodes you need, batch, and estimate calls before a push.
 - Match icons by **meaning** (code = Material Symbols, Figma = SDS_Main).

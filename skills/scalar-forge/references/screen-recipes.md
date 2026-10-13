@@ -160,8 +160,13 @@ Engagements moving through workflow steps, on a list, a calendar or a timeline.
 **Body:** a `DataGrid` of items with an `ActionPill` (+ `StepMenu`) and a
 `DueDatePill` per row; `DealCard` for the deal behind an item; `WorkCalendar`
 (with `CalendarTaskCard` as `renderEvent`) or `WorkTimeline` under a `PeriodToolbar`;
-`ColorPicker` for a firm's own status colours
-**Stories:** *Workboard/Action Pill*, *Calendar*, *Timeline*, *Deal Card*, *Color Picker*
+`ColorPicker` for a firm's own status colours. One item opened in full is a
+**`ValuationModal`**: a `ValuationSummary` on top (tags, `StatusTrigger`, company,
+folder and onboarding, five `AssigneeCard`s, `FigureList`, `DealCard tone="deal"`)
+and three `ValuationPanel`s (Valued Entity · Model with `StepAssignMenu inline` · Notes
+with `NoteCard` + `NoteComposer`).
+**Stories:** *Workboard/Action Pill*, *Calendar*, *Timeline*, *Deal Card*, *Color Picker*,
+*Step Assign Menu*, *Valuation Modal* (7 states), *Valuation Modal spec* (MDX)
 
 **Traps**
 
@@ -174,6 +179,18 @@ Engagements moving through workflow steps, on a list, a calendar or a timeline.
 - Use `ActionTag` for a step that can't be acted on (calendar cards, timelines).
 - `WorkCalendar` without `onShowMore` renders "+N more" as text, so pass it
   whenever a day can overflow.
+- `StepMenu` ≠ `StepAssignMenu`. `StepMenu` is the `ActionPill` caret menu in a
+  grid row (steps, tools, actions, no people). `StepAssignMenu` puts people on
+  steps: each step ends in `AssigneeAvatars` or an assign button that opens a
+  picker. `StatusTrigger` is a trigger only, so the screen owns open state and
+  dismissal.
+- The Deal card is `DealCard tone="deal"`, coloured by the Deal tokens
+  (`color.deal.*`, gap 14). Its ink is Deal/Text, never white (2.25:1 on the fill),
+  and never `bg.positive`.
+- `ValuationModal` has no header, so it needs `aria-label`. It is `Modal size="2xl"`
+  (1308px); don't widen it by hand.
+- At the 12px floor, long role names ("Engagement Manager") truncate in a
+  narrow `AssigneeCard`, with a tooltip. Don't shrink the type to fit.
 
 ---
 

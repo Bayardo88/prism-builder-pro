@@ -85,6 +85,20 @@ section(`Storybook stories (${storySource}: ${STORYBOOK}) — read the story sou
     return `${title}  [${names}]\n      docs ${STORYBOOK}/?path=/docs/${g.docs}  ·  source ${g.file.replace(/^\.\//, '')}`;
   }));
 
+// 2b. Storybook spec pages (MDX): anatomy, states, tokens and rules for a family of components
+const specDir = join(root, 'docs/storybook');
+if (existsSync(specDir)) {
+  const rows = [];
+  for (const f of readdirSync(specDir).filter((x) => x.endsWith('.mdx'))) {
+    const src = lines(`docs/storybook/${f}`);
+    const title = src.map(([, l]) => l.match(/<Meta title="([^"]+)"/)?.[1]).find(Boolean) ?? f;
+    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const hits = src.filter(([, l]) => hit(l) && /^(#|\||- )/.test(l));
+    if (hits.length || hit(title)) rows.push(`${title}  ${STORYBOOK}/?path=/docs/${id}--docs\n      ${hits.slice(0, 4).map(([n, l]) => `L${n} ${l.trim().slice(0, 140)}`).join('\n      ')}`);
+  }
+  section('Storybook spec pages (docs/storybook/*.mdx)', rows);
+}
+
 // 3. Figma → React component map
 section('Components (docs/components.md)', lines('docs/components.md').filter(([, l]) => l.startsWith('|') && !/^\|\s*(Figma|-)/.test(l) && hit(l)).map(([n, l]) => `L${n} ${l.replace(/\s+/g, ' ')}`));
 

@@ -20,9 +20,9 @@ retired and removed from Prism-v1, and adds a reuse-first layer:
 | `references/reuse-ladder.md` | 7-rung gate; when (and how) something new is allowed |
 | `references/screen-logic.md` | Screen brief, archetype→reference screen, state conventions, Figma grounding |
 | `references/app-architecture.md` | `apps/product` model: screen × state, `PageTemplate` chrome, routes, Table / DataGrid rules |
-| `references/screen-recipes.md` | Eight archetypes (incl. spreadsheet and workboard), their stories and their traps |
+| `references/screen-recipes.md` | Eight archetypes (incl. spreadsheet and workboard, with the Workboard Valuation modal), their stories and their traps |
 | `references/figma-push.md` | Code → Figma by instancing published components, starting from Page Template · Body Slot |
-| `scripts/reuse-check.mjs` | "Does this already exist?" search across screens, Storybook stories, components, PageTemplate / nav specs, docs, tokens and known gaps, with a warning when the checkout is behind `main` |
+| `scripts/reuse-check.mjs` | "Does this already exist?" search across screens, Storybook stories, Storybook spec pages (MDX), components, PageTemplate / nav specs, docs, tokens and known gaps, with a warning when the checkout is behind `main` |
 
 ### Install
 

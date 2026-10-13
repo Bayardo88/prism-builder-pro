@@ -21,7 +21,7 @@ Try 2–3 synonyms before concluding something doesn't exist.
 ## What counts as "the feature requests it"
 
 New layout / component is justified **only** when at least one is true:
-- The feature has an interaction with no equivalent (e.g. drag-to-reorder, a board/kanban) — confirmed by `reuse-check`, the Storybook index and AI-GUIDE §5. (Calendars, timelines, step pills and deal cards already exist — Workboard family.)
+- The feature has an interaction with no equivalent (e.g. drag-to-reorder, a board/kanban) — confirmed by `reuse-check`, the Storybook index and AI-GUIDE §5. (Calendars, timelines, step pills, deal cards, the Valuation modal, assignee cards, step assignment and notes already exist — Workboard family.)
 - The information architecture genuinely changes (a new top-level area, a new scope).
 - The requested data shape doesn't fit any grid/list/form archetype.
 
@@ -46,7 +46,7 @@ pasted that uses different styling (the DS wins — AI-GUIDE overrides screensho
 2. **Ask the user** before building it (it changes the shared design system, not just a screen).
 3. If approved, build the *smallest* thing:
    - **Screen-local first** (rung 6) — a tokens-only composition inside the screen folder, named for what it is. Promote to `src/components/` only if a second screen needs it.
-   - **New token**: token values come **from Figma**, never from code. Propose it to design; once it is in the published library, transcribe it into `src/styles/tokens.css` → `npm run gen:tokens` → `node scripts/gen-docs.mjs` → `npm run verify` (the generated `tokens.json`, `generated.ts`, `docs/tokens.md` are never hand-edited). Semantic, never primitive; Light and Dark values; a new `bg.*` re-runs the contrast gate (R13, `npm run lint:contrast`). The only code-first precedent is the Workflow tones (known gap 13) — don't add to it.
+   - **New token**: token values come **from Figma**, never from code. Propose it to design; once it is in the published library, transcribe it into `src/styles/tokens.css` → `npm run gen:tokens` → `node scripts/gen-docs.mjs` → `npm run verify` (the generated `tokens.json`, `generated.ts`, `docs/tokens.md` are never hand-edited). Semantic, never primitive; Light and Dark values; a new `bg.*` re-runs the contrast gate (R13, `npm run lint:contrast`). Follow Prism-v1 `ONBOARDING.md` › *Adding a new token*. The Deal family (gap 14) is the worked example: the variable was created in the tokens file with the file's conventions (ask first, it's a shared library), the user published it, then it was transcribed. Every fill gets an AA ink. The Workflow tones (gap 13) remain the only code-first family — don't add to it.
    - **New DS component**: `src/components/<family>/`, following `docs/component-contract.md` (`forwardRef`, native props + `...rest`, merged `className`, exported props type, `asChild` on triggers, the APG keyboard model for any role). Ship it with a **story** (`<Name>.stories.tsx`, `tags: ['autodocs']`) and a **test** (axe + keyboard + ref/className passthrough); export from the family `index.ts`; add a row to `docs/components.md` marked **＋**; document props in `AI-GUIDE.md` §7 (and §5 if it answers a new intent). `npm run verify` and `npm run test:stories` must pass.
 4. **Log it**: add the gap and your choice to the screen's `docs/product/pages/NN-*.md` "Gaps" section so design can adopt it in Figma (Figma is the source; code-only additions are debt until then).
 5. `npm run verify:product` (and `npm run verify` if `src/` changed) must stay green.

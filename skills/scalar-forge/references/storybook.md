@@ -37,7 +37,7 @@ Stories render inside `ScalarProvider mode="light"` (R14), with the a11y addon i
 `error` mode. A story that renders clean is the reference look for that component
 in light mode.
 
-## What's in it (49 groups, ~420 stories)
+## What's in it (50 groups, 440 stories, plus MDX spec pages)
 
 | Group (title) | Components it shows | Source |
 |---|---|---|
@@ -47,16 +47,17 @@ in light mode.
 | Header/Chrome · Header/Menus · Header/Controls · Header/ValuationInfo | `PrimaryMenu`, `CompanyInfo`, `SecondaryMenu`, `TertiaryMenu`, `MenuPanel`, `Selector`, `ToolSwitch`, `AITool`, `InformationLabel`, `ValuationInfo` | `header/` |
 | Navigation/Tabs · Navigation/GlobalSearch | `Tabs`, `Breadcrumb`, `Pagination`, `Stepper`, `GlobalSearch` + result rows | `navigation/`, `search/` |
 | Forms/Input · Checkbox · Controls · Patterns | `FormField`, `Input`, `Textarea`, `Select`, `Checkbox`, `Radio`, `Switch`, `DatePicker`, `FloatingLabel*`, `NumberField`, `TagInput`, `ComboboxPanel`, `SelectMenu`, `Dropzone`, `ImageCropField`… | `input/`, `checkbox/`, `form-controls/`, `form-patterns/` |
-| Menus/Actions · Menus/ContextMenu | `SplitButton`, `Fab`, `SpeedDial`, `SegmentedControl`, `ViewTabBar`, `ContextMenu`, `MenuItem` | `actions-menus/` |
+| Menus/Actions · Menus/ContextMenu | `SplitButton`, `Fab`, `SpeedDial`, `SegmentedControl` (`variant="outline"`, `count`, `fullWidth`), `ViewTabBar`, `ContextMenu`, `MenuItem` | `actions-menus/` |
 | Data/Table/Table + *Prism Table spec* (MDX) | `Table`, the one spreadsheet-like platform table: selection, resize, formula mode, editing | `table/Table.stories.tsx`, `docs/storybook/prism-table.mdx` |
 | Data/Table/DataGrid · Cell · ColumnHeader · RowHeader · Footnote · Status | `DataGrid`, `Row`, `RowHeader`, `Cell`, `ColumnHeader`, `Footnote`, `ModalStatus`, `ValuationStatus` | `table/` |
 | Data/GridPatterns | `RowLabelCell`, `GridValueCell`, `InCellControl`, `ColumnGroupHeader`, `GridColumnHeader`, `AddColumnHeader`, `TaskPill`, `CellHistoryPopover`… | `grid-patterns/` |
 | Charts/* | `BarChart`, `LineChart`, `DonutChart`, `WaterfallChart`, `ChartCanvas`, `ChartLegend` | `charts/` |
 | Feedback/Alert · Feedback/Banner | `Alert`, `Toast`, `ProgressBar`, `Skeleton`, `Banner`, `Spinner`, `ProgressRing`, `DataFreshness`, `SaveState` | `feedback/`, `feedback-patterns/` |
-| Overlays/Modal · Accordion · ConfirmationDialog | `Modal` (+ column picker), `Accordion`, `Drawer`, `WorkspaceDrawer`, `DataReviewCard`, `ConfirmationDialog`, `SettingRow`, `NotificationCenter`, `RowActionToolbar` | `modals/`, `disclosure/`, `overlays/` |
+| Overlays/Modal · Accordion · ConfirmationDialog | `Modal` (+ column picker; `size` up to `2xl`, 1308px), `Accordion`, `Drawer`, `WorkspaceDrawer`, `DataReviewCard`, `ConfirmationDialog`, `SettingRow`, `NotificationCenter`, `RowActionToolbar` | `modals/`, `disclosure/`, `overlays/` |
 | Files/Files | `FileRow`, `FileTypeBadge`, `TreeItem`, `PageStepper`, `ZoomControl`, `DocumentViewerHeader` | `files/` |
 | Admin/Admin | `KeyValueRow`, `VersionHistoryItem`, `PermissionMatrixRow`, `RoleSelector`, `ProfileHeader`, `FilterBar`, `DirectoryGroup`, `ProductTile`, `FirmSwitcherTile`, `PageTaskHeader`, `CodeGrid`, `RichTextToolbar`, `AppFooter` | `admin/` |
-| Workboard/* | `ActionPill`, `ActionTag`, `DueDatePill`, `StepMenu`, `DealCard`, `ColorPicker`, `WorkCalendar` + `CalendarTaskCard` + `PeriodToolbar`, `WorkTimeline` | `workboard/` |
+| Workboard/* | `ActionPill`, `ActionTag`, `DueDatePill`, `StepMenu`, `DealCard` (incl. *Deal tone*), `ColorPicker`, `WorkCalendar` + `CalendarTaskCard` + `PeriodToolbar`, `WorkTimeline`; **Step Assign Menu** (`StepAssignMenu`, `StatusTrigger`, 8 dropdown states); **Valuation Modal** (`ValuationModal`, `ValuationSummary`, `ValuationPanel`, `FigureList`, `AssigneeCard`, `AssigneeAvatars`, `NoteCard`, `NoteComposer`; 7 Figma states) | `workboard/` |
+| Spec pages (MDX) | *Data/Table/Prism Table spec* (`data-table-prism-table-spec--docs`), *Workboard/Valuation Modal spec* (`workboard-valuation-modal-spec--docs`): anatomy, states, tokens and the deliberate Figma differences | `docs/storybook/*.mdx` |
 
 The table above is a map, not the list. The live `index.json` is the list, so check it
 when a component isn't here.
@@ -66,4 +67,4 @@ when a component isn't here.
 - **Compose:** take the story's JSX (props, children, the `useState` wiring for open/selected) into the screen. Replace its demo data with `db` / `fixtures.ts` data.
 - **Check the look:** if your screen looks different from the story for the same props, your screen is wrong. Look for a stray wrapper style, a missing provider, or crossed `space`/`size` tokens.
 - **Missing state:** if the story has no example of the state you need (e.g. an error variant), check the AI-GUIDE §7 props first. A prop that exists is fine to use. A state that no prop can express is a rung-7 conversation (reuse-ladder.md).
-- **New or changed component (rung 7, approved):** it needs a story next to it (`<Name>.stories.tsx`, `tags: ['autodocs']`), plus a test (axe + keyboard + ref/className passthrough) per `docs/component-contract.md`. `npm run test:stories` runs every story under the a11y addon. The new story shows up on the live Storybook once the PR merges, and in the PR's Netlify deploy preview before that.
+- **New or changed component (rung 7, approved):** it needs a story next to it (`<Name>.stories.tsx`, `tags: ['autodocs']`), plus a test (axe + keyboard + ref/className passthrough) per `docs/component-contract.md`. `npm run test:stories` runs every story under the a11y addon **in a real browser**. CI runs it, so run it locally before pushing; jsdom tests don't catch label/visible-text mismatches or nested-surface contrast. A family of parts gets an MDX spec page too. The new story shows up on the live Storybook once the PR merges, and in the PR's Netlify deploy preview before that.

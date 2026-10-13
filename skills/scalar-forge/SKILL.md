@@ -9,8 +9,8 @@ Turns "I need a page" or "I want to explore this feature" into a working React
 prototype of the **real Scalar product**. It builds only from what already exists,
 **on the latest design system, which is Prism-v1 `main`**:
 
-- **Tokens and components:** `@scalar/design-system` (Prism-v1 `src/`): 462 tokens and 168 components.
-- **Usage:** the Storybook built from `main`, https://scalar-prism-storybook.netlify.app (49 groups, ~420 stories). See [references/storybook.md](references/storybook.md).
+- **Tokens and components:** `@scalar/design-system` (Prism-v1 `src/`): 487 tokens (including the Workflow and Deal families) and the 168 Figma components, plus the code-layer and Workboard families (the Valuation modal among them).
+- **Usage:** the Storybook built from `main`, https://scalar-prism-storybook.netlify.app (50 groups, 440 stories, plus MDX spec pages such as *Prism Table spec* and *Valuation Modal spec*). See [references/storybook.md](references/storybook.md).
 - **Screen base:** `PageTemplate` (`docs/page-template.md`) and the 3-tier navigation spec (`docs/navigation-3-tier-system.md`).
 - **Platform chrome and coded screens:** Prism-v1 `apps/product/`, which has 37 screens covering all 103 frames of Figma file `cZktZhD0ssL5lRVOvSqmOV`, plus prototypes.
 - **Logic and documentation:** `AI-GUIDE.md`, `docs/`, `docs/product/pages/*.md`.
@@ -42,7 +42,7 @@ feature demands it, and prove it.**
 3. Read **`AI-GUIDE.md`** in full: rules R1–R14, the intent→component railroad (§5) and the API (§7). It overrides any screenshot, story or existing screen.
 4. Read **`docs/page-template.md`** (§6 is the agent rules) and **`docs/navigation-3-tier-system.md`** §1 and §7–8 (tier scope and the per-screen configuration matrix).
 5. Read [references/storybook.md](references/storybook.md), [references/app-architecture.md](references/app-architecture.md), [references/reuse-ladder.md](references/reuse-ladder.md) and [references/screen-logic.md](references/screen-logic.md).
-6. Skim `docs/known-gaps.md`. Gaps change what you may build (charts, dense grids, icons, unpublished `cell`/`Header`, Workflow tones).
+6. Skim `docs/known-gaps.md`. Gaps change what you may build (charts, dense grids, icons, unpublished `cell`/`Header`, Workflow tones (13), Deal tokens (14)).
 7. See what exists: `docs/product/screen-catalog.md` / `screens.json`, `docs/product/README.md` (IA map) and the Storybook index.
 
 ## Step 1: Classify the request
@@ -60,6 +60,8 @@ For a Figma link or node id, look it up in `screens.json` (`states[].figmaNode`)
 - **Not found:** the frame is newer than the code. Use **New page** (or add a new state to the closest screen) and add the frame to `apps/product/figma-frames.json`.
 
 A link to the components file (`Z4MtKOfkNEzhMYJzN1q3kR`) is a component. Find its story; don't treat it as a screen.
+
+A link to the **workboard file** (`tuFpgEHX8w3BDI40U0FUwV`) is usually already coded. The "Assign users form Modal" section (532:16434) is `ValuationModal` and its parts, and every frame has a story. `docs/components.md` › Workboard maps each Figma node to its component. Compose from those; don't rebuild the modal from Figma.
 
 Before writing code, state in one line the mode, the existing screen(s) you start from, and the `main` commit you build on.
 
@@ -120,6 +122,7 @@ Before writing code, state in one line the mode, the existing screen(s) you star
 - Companies, users and funds come from `db`/`fixtures.ts`, never hard-coded lists.
 - Use realistic finance copy, never lorem ipsum.
 - Chart.js configs take values from `useChartTokens`, never `var(--…)`.
+- A deal's card is `DealCard tone="deal"` (or `color.deal.*`). Never `bg.positive`, because a deal is not a status, and never white text on the Deal fill, which is 2.25:1.
 
 ## Step 4: Verify. Don't claim it works until you've looked.
 
@@ -128,7 +131,7 @@ npm run build            # only if src/ changed
 npm run verify:product   # compile app + token lint + every-frame coverage check
 npm run verify           # if src/ changed: typecheck · token lint · contrast lint · ESLint · tests
 ```
-If you added a story: also run `npm run test:stories`.
+If you added or changed a story or a component: also run `npm run test:stories` and `npm run check:reflow`. **CI runs both and local `npm run verify` does not.** The story suite runs axe in a real browser. It catches what jsdom can't, such as visible text missing from an `aria-label` name (WCAG 2.5.3) and contrast on nested surfaces. A `Button` inside a dark or filled card needs that card's ink.
 
 **Reuse contract:** `git diff --stat` shows **no new file under `src/components/` or `src/styles/`** unless a rung-7 request was approved, and no `style={{…}}` value that isn't a token.
 
@@ -148,6 +151,8 @@ Report what you checked. If you couldn't render, say so. Hidden browser panes ca
 ## Step 5: Docs and Figma
 
 - Update `docs/product/pages/<page>.md` (purpose, how users get here, states, components, rules, **Gaps**). Run `npm run product:catalog` to regenerate the catalog.
+- A new or changed DS component also updates `AI-GUIDE.md` (§5 intent row and §7 API), `docs/components.md` (with its Figma node), `CHANGELOG.md`, and its story. For a family with several parts, add an MDX spec page in `docs/storybook/` (see *Valuation Modal spec*). Pipe tables render because `remark-gfm` is wired into addon-docs.
+- **A new token** follows Prism-v1 `ONBOARDING.md` › *Adding a new token*. Create the semantic variable in the tokens file (`anrnTIJKgu27zV224h7vON`, *Semantic: Color*) with the file's conventions: `Group/Name`, Light and Dark aliases to primitives, explicit scopes, `WEB` code syntax `var(--color-…)`, and a description. Give every fill an AA ink. Ask before writing to the shared library. **The user publishes it.** Then transcribe it into `tokens.css`, `index.ts`, `gen-docs.mjs` and `lint-contrast.mjs`, and regenerate. The Deal family (gap 14) is the worked example.
 - Push to Figma (code → design) only after the screen renders correctly. Load `figma-generate-design` + `figma-use` and follow [references/figma-push.md](references/figma-push.md):
   - Start from the **Page Template · Body Slot** component.
   - **Assemble from published library instances; never redraw as rectangles.**
@@ -168,7 +173,8 @@ Report what you checked. If you couldn't render, say so. Hidden browser panes ca
 - Build a page outside `PageTemplate` (or `CompanyLayout` on a legacy screen), hand-assemble the nav chrome, or add a fourth navigation tier.
 - Fork or re-skin `Table` for one product. There is one table; differences come from `columns`, `rows` and `cells`.
 - Leave a new page unreachable or break a route. The catalog check catches dropped frames, not dead links, so you must check those.
-- Colour a Global Search result by anything but its PRISM type, or use PRISM (or a Workflow tone) for access, permission or status.
+- Colour a Global Search result by anything but its PRISM type, or use PRISM (or a Workflow tone, or the Deal tokens) for access, permission or status.
+- Hand-build the Workboard Valuation modal or its parts (assignee cards, figure tiles, step assignment, notes). Compose `ValuationModal` from its components and their stories.
 - Use `text.primary` on a filled surface or white text on `bg.warning`. Ship a chart without a legend, or a canvas chart without its data table.
 - Ship dark mode on a page (R14).
 - Silently "fix" something in `docs/known-gaps.md`.

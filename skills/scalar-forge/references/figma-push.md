@@ -84,7 +84,7 @@ differently. `docs/components.md` has the full table; the ones that trip people:
 | `chartScaffold(grid)` | `Chart Frame` `Grid` variant |
 | `<PageTemplate>` + `children` | Page Template · Body Slot + its `BODY-SLOT` slot |
 | `<RowHeader>` | the first cell of `Row-reading` / `Row-input` |
-| any export marked **＋** in `docs/components.md` (e.g. `Table`, `ActionPill`, `StepMenu`, `DealCard`, `WorkCalendar`, `WorkTimeline`) | code-first: there's no library set to instance. Leave the region marked with a note naming the component and its props (and its story URL). Don't redraw it |
+| any export marked **＋** in `docs/components.md` (e.g. `Table`, `ActionPill`, `StepMenu`, `DealCard`, `WorkCalendar`, `WorkTimeline`, `ValuationModal`, `StepAssignMenu`, `StatusTrigger`, `AssigneeCard`, `FigureList`, `NoteCard`, `NoteComposer`) | code-first: there's no library set to instance. Leave the region marked with a note naming the component and its props (and its story URL). Don't redraw it |
 
 Interaction states have no CSS equivalent in Figma, so a handed-over screen
 shows the default state. Only build a hover or pressed frame if design asked
